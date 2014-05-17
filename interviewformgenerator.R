@@ -15,8 +15,8 @@ intformgen <- function(rolename, filename="interviewform.csv") {
 	# Read in the data from fragorna.csv
 	questions <- data.frame(read.csv("questions.csv", colClasses = "character", sep = ";"))
 	
-	# I use this variable as a kind of key to the complete register of KSAs, but it just holds 1:10
-	allcols <- c(1:10)
+	# I use this variable as a kind of key to the complete register of KSAs, but it just holds a range
+	allcols <- c(1:ncol(questions))
 
 	# Get the profile KSAs based on rolename
 	getksas <- function(rolename) {
@@ -49,39 +49,35 @@ intformgen <- function(rolename, filename="interviewform.csv") {
 	theseq <- list()
 	theseq <- rbind(theseq, paste("ROLE: ", rolename))
 
-	# These loops are probably not beautiful but they do the job
-	# For each profile KSA, append the title of the KSA to theseq
-	for (i in ksas) { 
-		appendthis <- paste("===:: ", names(questions[i]), " ::===", sep = "")
-		theseq <- rbind(theseq, appendthis)
-
-		# For each profile KSA, we want 3 questions, and for each of the questions
-		# append the question text to theseq
-		for (o in 1:3) {
-			appendthis <- questions[o, i]
-				if(!is.na(appendthis)) {
-				theseq <- rbind(theseq, appendthis)
-			} 
-		}
-	}
-
-	# For the rest we want just 1 question per KSA, so we need to know what the "rest" are
-	rest <- allcols[!allcols%in%ksas]
-
-	# Same as previous loop but for the rest, and only 1 question
-	for (i in rest) { 
-		
-		appendthis <- paste("===:: ", names(questions[i]), " ::===", sep = "")
-		theseq <- rbind(theseq, appendthis)
-		for (o in 1) {
-			appendthis <- questions[o, i]
-			if(!is.na(appendthis)) {
-				theseq <- rbind(theseq, appendthis)
-			} 
-		}
-	}
-
-
+  	printqs <- function(ksas, range) {
+	    theseq <- list()
+	    # For each KSA, append the title of the KSA to theseq
+	    for (i in ksas) {
+	      appendthis <- paste("===:: ", names(questions[i]), " ::===", sep = "")
+	      theseq <- rbind(theseq, appendthis)
+	      
+	      # For each profile KSA, we want a range of questions, and for each of the questions
+	      # append the question text to theseq
+	      for (o in range) {
+	        appendthis <- questions[o, i]
+	        if(!is.na(appendthis)) {
+	          theseq <- rbind(theseq, appendthis)
+	          }
+	         }
+    		}
+    	return(theseq)
+  	} 
+      
+  appendthese <- printqs(ksas, c(1:3))
+  theseq <- rbind(theseq, appendthese)
+  
+  # For the rest we want just 1 question per KSA, so we need to know what the "rest" are
+  rest <- allcols[!allcols%in%ksas]
+  
+  appendthese <- printqs(rest, 1)
+  theseq <- rbind(theseq, appendthese)
+  
+  
 	# Uncomment below if you want the program to print what will go into the file
 	#print("This will go in the file: ")
 	#print(theseq)
